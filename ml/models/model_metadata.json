@@ -1,0 +1,48 @@
+{
+  "feature_columns": [
+    "amount_log",
+    "payment_method_encoded",
+    "hour_of_day",
+    "day_of_week",
+    "retry_count",
+    "customer_failure_history",
+    "bank_code_encoded",
+    "is_weekend",
+    "is_night",
+    "amount_bucket"
+  ],
+  "failure_classes": [
+    "insufficient_funds",
+    "card_expired",
+    "network_error",
+    "authentication_failed",
+    "bank_declined",
+    "invalid_card",
+    "timeout",
+    "user_cancelled"
+  ],
+  "failure_feature_importances": {
+    "amount_log": 0.2663197737117551,
+    "payment_method_encoded": 0.061978263217905546,
+    "hour_of_day": 0.16549248603051117,
+    "day_of_week": 0.11562859297122102,
+    "retry_count": 0.08699918411516246,
+    "customer_failure_history": 0.10506625464829965,
+    "bank_code_encoded": 0.11298995752313978,
+    "is_weekend": 0.021712748149378878,
+    "is_night": 0.027075807118884954,
+    "amount_bucket": 0.03673693251374154
+  },
+  "recovery_feature_importances": {
+    "amount_log": 0.4222316181641541,
+    "payment_method_encoded": 0.03577692915046233,
+    "hour_of_day": 0.07259655993036476,
+    "day_of_week": 0.05352286384538297,
+    "retry_count": 0.2780905259303746,
+    "customer_failure_history": 0.05946180868773737,
+    "bank_code_encoded": 0.05951756020223414,
+    "is_weekend": 0.004789666154934602,
+    "is_night": 0.011333704288692919,
+    "amount_bucket": 0.002678763645662123
+  }
+}
