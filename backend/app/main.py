@@ -1,3 +1,5 @@
+print("STARTUP: main.py module loading...", flush=True)
+
 import asyncio
 import time
 from contextlib import asynccontextmanager
@@ -74,13 +76,16 @@ async def _run_demo_seed():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Create tables if they don't exist (dev convenience)
+    print("STARTUP: lifespan entered", flush=True)
+    print("STARTUP: creating database tables...", flush=True)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    print("STARTUP: database tables ready", flush=True)
 
     seed_task = asyncio.create_task(_run_demo_seed())
     listener_task = asyncio.create_task(_redis_event_listener())
     live_feed_task = asyncio.create_task(_live_feed_loop())
+    print("STARTUP: background tasks created, startup returning", flush=True)
     yield
 
     seed_task.cancel()
@@ -107,6 +112,7 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+print("STARTUP: FastAPI app created", flush=True)
 
 app.add_middleware(
     CORSMiddleware,

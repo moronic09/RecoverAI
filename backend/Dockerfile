@@ -14,6 +14,7 @@ COPY ml/ ./ml/
 WORKDIR /app/backend
 
 ENV PYTHONPATH=/app/backend:/app/ml
+ENV PYTHONUNBUFFERED=1
 ENV DATABASE_URL=postgresql+asyncpg://recoverai:recoverai@postgres:5432/recoverai
 ENV REDIS_URL=redis://redis:6379/0
 ENV CELERY_BROKER_URL=redis://redis:6379/0
@@ -21,4 +22,4 @@ ENV CELERY_RESULT_BACKEND=redis://redis:6379/1
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
