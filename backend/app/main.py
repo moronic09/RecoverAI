@@ -1,4 +1,5 @@
 import asyncio
+import time
 from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
@@ -11,6 +12,7 @@ from app.auth.dependencies import get_current_merchant
 from app.config import get_settings
 from app.database import AsyncSessionLocal, Base, engine
 from app.models.merchant import Merchant
+from app.models.transaction import Transaction
 from app.schemas import MerchantResponse
 from app.services.redis_events import is_live_feed_enabled, subscribe_events
 from app.tasks.simulation_tasks import generate_live_event
@@ -38,15 +40,36 @@ async def _live_feed_loop():
 
 async def _seed_demo_if_needed():
     async with AsyncSessionLocal() as db:
-        result = await db.execute(select(Merchant).where(Merchant.email == "demo@recoverai.com"))
-        if result.scalar_one_or_none():
+        merchant_result = await db.execute(select(Merchant).where(Merchant.email == "demo@recoverai.com"))
+        merchant = merchant_result.scalar_one_or_none()
+        if merchant:
+            transaction_result = await db.execute(
+                select(Transaction.id).where(Transaction.merchant_id == merchant.id).limit(1)
+            )
+        else:
+            transaction_result = None
+
+        if transaction_result and transaction_result.scalar_one_or_none():
             print("Demo database already seeded, skipping.")
             return
 
-    print("No existing data found — seeding demo database...")
+    print("No existing demo data found — seeding demo database...")
     from scripts.seed_demo import seed
 
-    await seed()
+    await seed(transaction_limit=250)
+
+
+async def _run_demo_seed():
+    started_at = time.monotonic()
+    print("Starting demo data seed...")
+    try:
+        await _seed_demo_if_needed()
+    except asyncio.CancelledError:
+        raise
+    except Exception as exc:
+        print(f"Demo data seed failed after {time.monotonic() - started_at:.2f}s: {exc}")
+    else:
+        print(f"Demo data seed completed in {time.monotonic() - started_at:.2f}s")
 
 
 @asynccontextmanager
@@ -55,14 +78,18 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    await _seed_demo_if_needed()
-
+    seed_task = asyncio.create_task(_run_demo_seed())
     listener_task = asyncio.create_task(_redis_event_listener())
     live_feed_task = asyncio.create_task(_live_feed_loop())
     yield
 
+    seed_task.cancel()
     listener_task.cancel()
     live_feed_task.cancel()
+    try:
+        await seed_task
+    except asyncio.CancelledError:
+        pass
     try:
         await listener_task
     except asyncio.CancelledError:

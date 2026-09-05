@@ -30,7 +30,7 @@ from app.models.transaction import Transaction
 from app.services.ml_service import MLService
 
 
-async def seed():
+async def seed(transaction_limit: int = 800):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
@@ -67,7 +67,7 @@ async def seed():
         if not csv_path.exists():
             from generate_mock_data import generate_transactions
             csv_path.parent.mkdir(parents=True, exist_ok=True)
-            df = generate_transactions(count=5000, seed=42)
+            df = generate_transactions(count=transaction_limit, seed=42)
             df.to_csv(csv_path, index=False)
             print(f"Generated {len(df)} transactions to {csv_path}")
         else:
@@ -75,7 +75,7 @@ async def seed():
             print(f"Loaded {len(df)} transactions from {csv_path}")
 
         # Seed curated subset with good demo stats
-        demo_df = df.head(800).copy()
+        demo_df = df.head(transaction_limit).copy()
         print(f"Seeding {len(demo_df)} transactions...")
 
         batch_size = 100
