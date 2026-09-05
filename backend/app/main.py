@@ -4,11 +4,12 @@ from contextlib import asynccontextmanager
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
+from sqlalchemy import select
 
 from app.api import auth, dashboard, simulation, transactions
 from app.auth.dependencies import get_current_merchant
 from app.config import get_settings
-from app.database import engine, Base
+from app.database import AsyncSessionLocal, Base, engine
 from app.models.merchant import Merchant
 from app.schemas import MerchantResponse
 from app.services.redis_events import is_live_feed_enabled, subscribe_events
@@ -35,11 +36,26 @@ async def _live_feed_loop():
         await asyncio.sleep(settings.live_feed_interval_seconds)
 
 
+async def _seed_demo_if_needed():
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(select(Merchant).where(Merchant.email == "demo@recoverai.com"))
+        if result.scalar_one_or_none():
+            print("Demo database already seeded, skipping.")
+            return
+
+    print("No existing data found — seeding demo database...")
+    from scripts.seed_demo import seed
+
+    await seed()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Create tables if they don't exist (dev convenience)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    await _seed_demo_if_needed()
 
     listener_task = asyncio.create_task(_redis_event_listener())
     live_feed_task = asyncio.create_task(_live_feed_loop())
