@@ -34,7 +34,7 @@ export default function TransactionsPage() {
     <div className="ledger-page">
       <div>
         <p className="eyebrow">Payment ledger / recovery decisions</p>
-        <h1 className="font-serif text-5xl font-bold tracking-tight">Transactions</h1>
+        <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">Transactions</h1>
         <p className="text-slate-500 mt-2">Every failed payment, weighed against the cost of pursuing it.</p>
       </div>
 
@@ -112,7 +112,7 @@ function TransactionRow({
   return (
     <div>
       <div
-        className="flex items-center gap-4 py-5 border-b border-paper-line hover:bg-[#EFEBE2] cursor-pointer transition-colors"
+        className="transaction-row flex items-center gap-4 py-5 border-b border-paper-line hover:bg-[#EFEBE2] cursor-pointer transition-colors"
         onClick={onToggle}
       >
         <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-5 gap-2 items-center">
@@ -120,7 +120,7 @@ function TransactionRow({
             <p className="font-mono text-sm text-slate-300 truncate">{tx.razorpay_payment_id}</p>
             <p className="text-xs text-slate-500">{new Date(tx.created_at).toLocaleString()}</p>
           </div>
-          <p className="font-mono text-right text-sm">{formatCurrency(Number(tx.amount))}</p>
+          <p className="font-mono text-left md:text-right text-sm">{formatCurrency(Number(tx.amount))}</p>
           <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${tx.status === 'captured' ? 'text-revival' : tx.status === 'failed' ? 'text-flatline' : 'text-amber-700'}`}>
             {tx.status === 'captured' ? <Check className="w-3 h-3" aria-hidden="true" /> : tx.status === 'failed' ? <X className="w-3 h-3" aria-hidden="true" /> : <Clock className="w-3 h-3" aria-hidden="true" />} {tx.status}
           </span>
@@ -156,15 +156,15 @@ function TransactionRow({
                     <p className="border-b border-paper-line pb-3 text-xs leading-relaxed text-slate-600">
                       {transactionSummary(tx, pred.recovery_probability)}
                     </p>
-                    <div className="flex justify-between">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
                       <span className="text-slate-400">Predicted cause</span>
                       <span>{formatReason(pred.predicted_failure_class)}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
                       <span className="text-slate-400">Confidence</span>
                       <span>{formatPercent(pred.failure_confidence * 100)}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
                       <span className="text-slate-400">Recovery probability</span>
                       <span className="text-revival font-semibold">{formatPercent((tx.fatigue_adjusted_probability ?? pred.recovery_probability) * 100)} <span className="text-xs text-slate-500">({tx.confidence || 'medium'} confidence)</span></span>
                     </div>
@@ -174,7 +174,7 @@ function TransactionRow({
                     <div className="border-t border-paper-line pt-3 text-xs text-slate-600">
                       <span className="font-medium">ROI decision:</span> {tx.recommendation || 'Pending'} · expected value {formatCurrency(tx.expected_value ?? 0)} after {formatCurrency(tx.estimated_retry_cost ?? 0)} cost
                     </div>
-                    <div className="flex justify-between text-xs">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:justify-between text-xs">
                       <span className="text-slate-500">Recommended channel</span>
                       <span className="text-revival">→ {tx.recommended_channel_label || 'Review'}</span>
                     </div>
