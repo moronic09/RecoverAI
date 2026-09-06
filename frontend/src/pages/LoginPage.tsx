@@ -32,7 +32,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-paper p-4">
+    <div className="min-h-screen flex items-center justify-center overflow-x-hidden bg-paper p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -47,10 +47,10 @@ export default function LoginPage() {
               RecoverAI
             </h1>
           </div>
-          <p className="text-slate-500">Payment recovery intelligence for Razorpay merchants</p>
+          <p className="text-sm sm:text-base text-slate-500">Payment recovery intelligence for Razorpay merchants</p>
         </div>
 
-        <div className="border border-paper-line bg-[#EFEBE2] p-8">
+        <div className="border border-paper-line bg-[#EFEBE2] p-6 sm:p-8">
           <h2 className="text-xl font-semibold text-ink mb-6">{isRegister ? 'Create account' : 'Sign in'}</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
